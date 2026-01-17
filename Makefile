@@ -2,13 +2,14 @@ NAME = philo
 
 CC = cc 
 
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -g -I$(INC_DIR)
 
+# DIRECTORIES
 SRC_DIR = src
-
-SRC = src/main.c src/action.c src/error_handling.c src/parsing.c src/utils.c
-
 OBJ_DIR = obj
+INC_DIR = inc
+
+SRC := $(shell find $(SRC_DIR) -name "*.c")
 
 OBJ = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 

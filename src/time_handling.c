@@ -1,32 +1,39 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   time_handling.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: miricci <miricci@student.42firenze.it>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/12/04 11:29:30 by miricci           #+#    #+#             */
-/*   Updated: 2025/12/09 13:40:32 by miricci          ###   ########.fr       */
+/*   Created: 2025/12/04 13:01:41 by miricci           #+#    #+#             */
+/*   Updated: 2025/12/09 13:35:09 by miricci          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-int	main(int ac, char **av)
+uint64_t	get_time(void)
 {
-	t_philo	**philo;
-	t_data	*data;
+	struct timeval	tv;
+	uint64_t		now;
 
-	if (ac < 5 || ac > 6)
-		return (printf("Error\n"), 1);
-	else
+	if (gettimeofday(&tv, NULL))
+		return (printf("Error\n"), 0);
+	now = tv.tv_sec * 1000;
+	now += tv.tv_usec / 1000;
+	return (now);
+}
+
+void	ft_usleep(t_philo *philo, uint64_t time)
+{
+	uint64_t	start;
+
+	start = get_time();
+	while (get_time() - start < time)
 	{
-		data = init_data(av);
-		if (!data->nbr_philo)
-			return (clean_data(data), printf("Error\n"), 1);
-		philo = init_simulation(data);
-		set_threads(philo, data);
-		cleanup(data, philo);
+		if (!get_someonedied(philo))
+			usleep(500);
+		else
+			return ;
 	}
-	return (0);
 }

@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: miricci <miricci@student.42firenze.it>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/05/23 14:07:58 by miricci           #+#    #+#             */
-/*   Updated: 2025/05/25 15:17:23 by miricci          ###   ########.fr       */
+/*   Created: 2025/12/04 15:35:29 by miricci           #+#    #+#             */
+/*   Updated: 2025/12/09 12:16:31 by miricci          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,51 +45,34 @@ int	ft_atoi(const char *nptr)
 	return (sgn * nbr);
 }
 
-void	ft_free(void **s, int i)
+void	ft_free(void **s, void (*clean)(void *), int size)
 {
-	int	j;
-
-	if (i == -1)
-	{
-		j = 0;
-		while (s[j])
-			free(s[j++]);
-	}
-	else
-	{
-		while (--i >= 0)
-			free(s[i]);
-	}
+	while (--size >= 0)
+		(clean)(s[size]);
 	free(s);
 }
 
-unsigned int	get_time()
+void	print_action(t_philo *philo, char *action)
 {
-	struct timeval tv;
-	
-	gettimeofday(&tv, NULL);
-	return(tv.tv_sec * 1000 + tv.tv_usec / 1000);
+	t_data	*data;
+
+	data = (t_data *)philo->data;
+	pthread_mutex_lock(&(data->write_lock));
+	if (!get_someonedied(philo))
+		printf("%ld %d %s\n", get_time(), philo->id, action);
+	pthread_mutex_unlock(&(data->write_lock));
 }
 
-int	ft_usleep(unsigned int time)
+void	handle_deadlock(t_philo *philo, void (*func)(t_philo *, t_fork *))
 {
-	unsigned int	start;
-	unsigned int	time_in_ms;
-	
-	time_in_ms = time / 1000;
-	start = get_time(); // ritorna tempo in millisecondi
-	while ((get_time() - start) < time_in_ms)
+	if (philo->id % 2)
 	{
-		if ((time_in_ms - (get_time() - start)) > 5)
-			ft_usleep(1000); // dorme 1 millisecondo = 1000 microsecondi
-		// else
-		// 	; // busy-wait per gli ultimi millisecondi
+		func(philo, philo->right_fork);
+		func(philo, philo->left_fork);
 	}
-	return (0);
+	else
+	{
+		func(philo, philo->left_fork);
+		func(philo, philo->right_fork);
+	}
 }
-
-void	print_action(t_philo *philo, const char *action)
-{
-	printf("%d %d %s\n", get_time(), philo->philo_id, action);
-}
-
